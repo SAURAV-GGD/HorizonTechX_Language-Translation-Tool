@@ -1,0 +1,23 @@
+{
+  "project_name": "LinguaFlow AI",
+  "version": "1.0.0",
+  "root_dir": "./src",
+  "output_dir": "./graphify-out",
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    "build",
+    "*.log"
+  ],
+  "parsers": {
+    "typescript": [".ts", ".tsx"],
+    "css": [".css"],
+    "markdown": [".md"]
+  },
+  "settings": {
+    "persistent": true,
+    "token_efficiency": true,
+    "chunk_size": 1000
+  }
+}
