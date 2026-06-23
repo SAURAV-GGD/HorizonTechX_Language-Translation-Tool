@@ -15,26 +15,26 @@
 
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
   text?: string;
 }
 
+// Map size names to pixel values (static — hoisted so it isn't rebuilt every render)
+const SIZES = {
+  sm: 24,
+  md: 40,
+  lg: 56,
+};
+
 export default function LoadingSpinner({
   size = "md",
   text = "Translating...",
 }: LoadingSpinnerProps) {
-  // Map size names to pixel values
-  const sizes = {
-    sm: 24,
-    md: 40,
-    lg: 56,
-  };
-
-  const dotSize = sizes[size] / 5;
-  const containerSize = sizes[size];
+  const dotSize = SIZES[size] / 5;
+  const containerSize = SIZES[size];
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -44,7 +44,7 @@ export default function LoadingSpinner({
         style={{ width: containerSize, height: containerSize }}
       >
         {[0, 1, 2].map((index) => (
-          <motion.div
+          <m.div
             key={index}
             className="rounded-full bg-primary-500"
             style={{ width: dotSize, height: dotSize }}
@@ -64,15 +64,14 @@ export default function LoadingSpinner({
 
       {/* Loading text */}
       {text && (
-        <motion.p
-          className="text-sm font-medium"
-          style={{ color: "var(--text-secondary)" }}
+        <m.p
+          className="text-sm font-medium text-white/50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
           {text}
-        </motion.p>
+        </m.p>
       )}
     </div>
   );

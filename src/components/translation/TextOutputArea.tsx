@@ -13,7 +13,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   Copy,
   Check,
@@ -23,12 +23,15 @@ import {
 } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { copyToClipboard, downloadAsTextFile, speakText } from "@/lib/utils";
+import { PROVIDER_LABELS, FALLBACK_PROVIDERS } from "@/lib/constants";
+import { TranslationProvider } from "@/types";
 
 interface TextOutputAreaProps {
   translatedText: string;
   isLoading: boolean;
   error: string | null;
   targetLang: string;
+  provider: TranslationProvider | null;
   onCopySuccess: () => void;
   onCopyError: () => void;
 }
@@ -38,11 +41,18 @@ export default function TextOutputArea({
   isLoading,
   error,
   targetLang,
+  provider,
   onCopySuccess,
   onCopyError,
 }: TextOutputAreaProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Provider metadata for the output badge / fallback hint.
+  const hasProvider = !!provider && provider !== "none";
+  const providerLabel = provider ? PROVIDER_LABELS[provider] ?? provider : "";
+  const isFallbackProvider =
+    !!provider && (FALLBACK_PROVIDERS as readonly string[]).includes(provider);
 
   // ─── Copy to Clipboard ────────────────────────────
   async function handleCopy() {
@@ -83,7 +93,7 @@ export default function TextOutputArea({
         <AnimatePresence mode="wait">
           {/* Loading State */}
           {isLoading && (
-            <motion.div
+            <m.div
               key="loading"
               className="absolute inset-0 flex items-center justify-center"
               initial={{ opacity: 0 }}
@@ -91,12 +101,12 @@ export default function TextOutputArea({
               exit={{ opacity: 0 }}
             >
               <LoadingSpinner />
-            </motion.div>
+            </m.div>
           )}
 
           {/* Error State */}
           {error && !isLoading && (
-            <motion.div
+            <m.div
               key="error"
               className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20"
               initial={{ opacity: 0, y: 10 }}
@@ -105,12 +115,12 @@ export default function TextOutputArea({
             >
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
               <p className="text-sm text-red-400">{error}</p>
-            </motion.div>
+            </m.div>
           )}
 
           {/* Translated Text */}
           {translatedText && !isLoading && !error && (
-            <motion.div
+            <m.div
               key="result"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -119,26 +129,32 @@ export default function TextOutputArea({
               <p
                 className="text-base leading-relaxed whitespace-pre-wrap"
                 style={{
-                  color: "var(--text-primary)",
-                  fontFamily: "'Inter', sans-serif",
+                  color: "white",
+                  fontFamily: "var(--font-inter), sans-serif",
                 }}
               >
                 {translatedText}
               </p>
-            </motion.div>
+
+              {/* Subtle hint when a fallback provider was used */}
+              {isFallbackProvider && (
+                <p className="mt-2 text-xs italic text-white/30">
+                  Premium translation unavailable — using fallback provider.
+                </p>
+              )}
+            </m.div>
           )}
 
           {/* Empty State */}
           {!translatedText && !isLoading && !error && (
-            <motion.p
+            <m.p
               key="empty"
-              className="text-base"
-              style={{ color: "var(--text-muted)" }}
+              className="text-base text-white/30"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
             >
               Translation will appear here...
-            </motion.p>
+            </m.p>
           )}
         </AnimatePresence>
       </div>
@@ -146,11 +162,11 @@ export default function TextOutputArea({
       {/* Bottom Bar — Action Buttons */}
       <div
         className="flex items-center justify-between px-4 py-2.5 border-t"
-        style={{ borderColor: "var(--border-color)" }}
+        style={{ borderColor: "rgba(255,255,255,0.06)" }}
       >
         <div className="flex items-center gap-1.5">
           {/* Copy Button */}
-          <motion.button
+          <m.button
             onClick={handleCopy}
             disabled={!translatedText}
             className="icon-btn !w-8 !h-8"
@@ -160,29 +176,29 @@ export default function TextOutputArea({
           >
             <AnimatePresence mode="wait">
               {isCopied ? (
-                <motion.div
+                <m.div
                   key="check"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
                 >
                   <Check className="w-4 h-4 text-emerald-500" />
-                </motion.div>
+                </m.div>
               ) : (
-                <motion.div
+                <m.div
                   key="copy"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
                 >
                   <Copy className="w-4 h-4" />
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
-          </motion.button>
+          </m.button>
 
           {/* TTS Button */}
-          <motion.button
+          <m.button
             onClick={handleSpeak}
             disabled={!translatedText || isSpeaking}
             className={`icon-btn !w-8 !h-8 ${
@@ -193,10 +209,10 @@ export default function TextOutputArea({
             title="Text to speech"
           >
             <Volume2 className="w-4 h-4" />
-          </motion.button>
+          </m.button>
 
           {/* Download Button */}
-          <motion.button
+          <m.button
             onClick={handleDownload}
             disabled={!translatedText}
             className="icon-btn !w-8 !h-8"
@@ -205,22 +221,23 @@ export default function TextOutputArea({
             title="Download as text file"
           >
             <Download className="w-4 h-4" />
-          </motion.button>
+          </m.button>
         </div>
 
-        {/* Provider Badge */}
+        {/* Provider Badge — shows which API translated the text */}
         {translatedText && (
-          <motion.span
-            className="text-xs px-2 py-1 rounded-lg"
+          <m.span
+            className="text-xs italic px-2 py-1 rounded-lg"
             style={{
-              background: "var(--input-bg)",
-              color: "var(--text-muted)",
+              background: "rgba(255,255,255,0.05)",
+              color: "rgba(255,255,255,0.4)",
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            title={hasProvider ? `Translated by ${providerLabel}` : undefined}
           >
-            ✨ AI Translated
-          </motion.span>
+            {hasProvider ? `Translated by ${providerLabel} ✓` : "✨ Translated"}
+          </m.span>
         )}
       </div>
     </div>

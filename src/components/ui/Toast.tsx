@@ -22,7 +22,7 @@
 
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   CheckCircle,
   XCircle,
@@ -62,39 +62,40 @@ interface ToastItemProps {
   onDismiss: () => void;
 }
 
+// Icon + color config per toast type (static — hoisted so it isn't rebuilt every render)
+const TOAST_CONFIG = {
+  success: {
+    icon: CheckCircle,
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/30",
+    iconColor: "text-emerald-500",
+  },
+  error: {
+    icon: XCircle,
+    bg: "bg-red-500/10",
+    border: "border-red-500/30",
+    iconColor: "text-red-500",
+  },
+  warning: {
+    icon: AlertTriangle,
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/30",
+    iconColor: "text-amber-500",
+  },
+  info: {
+    icon: Info,
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/30",
+    iconColor: "text-blue-500",
+  },
+};
+
 function ToastItem({ toast, onDismiss }: ToastItemProps) {
   // Choose icon and colors based on toast type
-  const config = {
-    success: {
-      icon: CheckCircle,
-      bg: "bg-emerald-500/10",
-      border: "border-emerald-500/30",
-      iconColor: "text-emerald-500",
-    },
-    error: {
-      icon: XCircle,
-      bg: "bg-red-500/10",
-      border: "border-red-500/30",
-      iconColor: "text-red-500",
-    },
-    warning: {
-      icon: AlertTriangle,
-      bg: "bg-amber-500/10",
-      border: "border-amber-500/30",
-      iconColor: "text-amber-500",
-    },
-    info: {
-      icon: Info,
-      bg: "bg-blue-500/10",
-      border: "border-blue-500/30",
-      iconColor: "text-blue-500",
-    },
-  };
-
-  const { icon: Icon, bg, border, iconColor } = config[toast.type];
+  const { icon: Icon, bg, border, iconColor } = TOAST_CONFIG[toast.type];
 
   return (
-    <motion.div
+    <m.div
       layout
       initial={{ opacity: 0, x: 50, scale: 0.9 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -115,6 +116,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
         {toast.message}
       </p>
       <button
+        type="button"
         onClick={(e) => {
           e.stopPropagation();
           onDismiss();
@@ -123,6 +125,6 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
       >
         <X className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
       </button>
-    </motion.div>
+    </m.div>
   );
 }

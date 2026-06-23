@@ -1,11 +1,13 @@
 /* ============================================
  * TranslatorCard — Parent Controller Card
  * ============================================
+ * Liquid glass translator with dark-mode-only styling.
  */
 
 "use client";
 
 import { TranslationState, TranslationTone } from "@/types";
+import { LIMITS } from "@/lib/constants";
 import GlassCard from "@/components/ui/GlassCard";
 import LanguageSelector from "./LanguageSelector";
 import TextInputArea from "./TextInputArea";
@@ -46,11 +48,13 @@ export default function TranslatorCard({
   showToast,
 }: TranslatorCardProps) {
   const isSwapDisabled = state.sourceLang === "auto";
-  const isTranslateDisabled = !state.sourceText.trim() || state.isLoading;
+  const isOverLimit = state.sourceText.length > LIMITS.MAX_CHARS;
+  const isTranslateDisabled =
+    !state.sourceText.trim() || state.isLoading || isOverLimit;
 
   return (
     <div className="w-full flex flex-col gap-6">
-      {/* Dynamic Selector Row */}
+      {/* Language selector row */}
       <div className="flex flex-col sm:flex-row items-center gap-3">
         <div className="w-full sm:flex-1">
           <LanguageSelector
@@ -73,19 +77,22 @@ export default function TranslatorCard({
         </div>
       </div>
 
-      {/* Main Grid: Input and Output Panels */}
+      {/* Main Grid: Input and Output */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Source Text Side */}
         <GlassCard className="!p-0 overflow-hidden flex flex-col min-h-[220px]">
-          <div className="p-3 border-b flex justify-between items-center bg-black/[0.02] dark:bg-white/[0.02]" style={{ borderColor: "var(--border-color)" }}>
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          <div
+            className="p-3 border-b flex justify-between items-center"
+            style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          >
+            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
               Source Text
             </span>
             {state.sourceText && (
               <button
+                type="button"
                 onClick={onClear}
-                className="text-xs font-semibold transition-colors duration-150 hover:text-primary-500"
-                style={{ color: "var(--text-muted)" }}
+                className="text-xs font-semibold text-white/40 hover:text-white transition-colors duration-150"
               >
                 Clear All
               </button>
@@ -104,8 +111,11 @@ export default function TranslatorCard({
 
         {/* Target Text Side */}
         <GlassCard className="!p-0 overflow-hidden flex flex-col min-h-[220px]">
-          <div className="p-3 border-b flex justify-between items-center bg-black/[0.02] dark:bg-white/[0.02]" style={{ borderColor: "var(--border-color)" }}>
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          <div
+            className="p-3 border-b flex justify-between items-center"
+            style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          >
+            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
               Translated Output
             </span>
           </div>
@@ -114,18 +124,19 @@ export default function TranslatorCard({
             isLoading={state.isLoading}
             error={state.error}
             targetLang={state.targetLang}
+            provider={state.provider}
             onCopySuccess={() => showToast("Copied to clipboard!", "success")}
             onCopyError={() => showToast("Failed to copy.", "error")}
           />
         </GlassCard>
       </div>
 
-      {/* Tone Settings Drawer */}
+      {/* Tone Settings */}
       <GlassCard className="p-4 flex flex-col items-center gap-4">
         <ToneAdjuster value={state.tone} onChange={setTone} />
       </GlassCard>
 
-      {/* Execution Call to Action */}
+      {/* Translate Button */}
       <TranslateButton
         onClick={onTranslate}
         isLoading={state.isLoading}

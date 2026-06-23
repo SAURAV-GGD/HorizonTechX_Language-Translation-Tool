@@ -21,40 +21,67 @@
 
 // ─── API Configuration ─────────────────────────────────
 export const API_URLS = {
-  // MyMemory: Free translation API, no key needed
+  // DeepL: PRIMARY provider (Google-Translate-level quality).
+  // Free keys end in ":fx" and use the api-free host; Pro keys use api.deepl.com.
+  // The service picks the right host from the key suffix at runtime.
+  // Docs: https://developers.deepl.com/api-reference/translate
+  DEEPL_FREE: "https://api-free.deepl.com/v2/translate",
+  DEEPL_PRO: "https://api.deepl.com/v2/translate",
+
+  // Google: free public translate endpoint (no key needed). De-facto
+  // PRIMARY when no DeepL key is set — reliable, fast, supports every
+  // language in our list (including Indian languages DeepL can't do).
+  GOOGLE: "https://translate.googleapis.com/translate_a/single",
+
+  // MyMemory: FALLBACK translation API (free, no key needed).
   // Docs: https://mymemory.translated.net/doc/spec.php
   MYMEMORY: "https://api.mymemory.translated.net/get",
 
-  // LibreTranslate: Open-source fallback
-  // Can be self-hosted or use public instances
-  LIBRETRANSLATE: process.env.NEXT_PUBLIC_LIBRETRANSLATE_URL || "https://libretranslate.com",
+  // LibreTranslate: LAST-RESORT open-source provider.
+  // Default public instance; override via LIBRE_TRANSLATE_URL.
+  // (libretranslate.de is frequently down; libretranslate.com is the
+  // maintained public host.)
+  LIBRETRANSLATE_DEFAULT: "https://libretranslate.com",
 } as const;
 // "as const" makes this object deeply readonly — you can't
 // accidentally change these values at runtime.
+
+// ─── Provider Display Labels ────────────────────────────
+// Maps the lowercase provider keys returned by the API to the
+// human-friendly names shown in the output badge.
+export const PROVIDER_LABELS: Record<string, string> = {
+  deepl: "DeepL",
+  google: "Google",
+  mymemory: "MyMemory",
+  libretranslate: "LibreTranslate",
+  none: "Direct",
+};
+
+// Providers considered "fallback" quality — used to surface a subtle
+// "premium unavailable" hint in the UI.
+export const FALLBACK_PROVIDERS = ["mymemory", "libretranslate"] as const;
+
+// ─── Network / Abuse Protection ─────────────────────────
+// Per-provider fetch timeout (AbortController) so a slow upstream
+// never hangs the whole waterfall.
+export const TRANSLATION_TIMEOUT_MS = 15000;
+
+// In-memory rate limit applied per client IP in the translate route.
+// Protects the DeepL free-tier quota from abuse.
+export const RATE_LIMIT = {
+  WINDOW_MS: 60_000, // 1 minute window
+  MAX_REQUESTS: 30,  // max requests per IP per window
+} as const;
 
 // ─── App Limits ─────────────────────────────────────────
 export const LIMITS = {
   MAX_CHARS: 5000,           // Maximum characters per translation
   MAX_HISTORY: 50,           // Maximum saved history entries
-  DEBOUNCE_MS: 800,          // Delay before auto-translate triggers
+  DEBOUNCE_MS: 500,          // Delay before auto-translate triggers
   TOAST_DURATION: 3000,      // Toast notification display time (ms)
   MYMEMORY_MAX_BYTES: 500,   // MyMemory API limit per request
-} as const;
-
-// ─── Animation Durations ────────────────────────────────
-// Keeping animation timings consistent across the app
-export const ANIMATION = {
-  FAST: 0.15,      // Quick micro-interactions (button clicks)
-  NORMAL: 0.3,     // Standard transitions (panel open/close)
-  SLOW: 0.5,       // Dramatic entrances (page load animations)
-  SPRING: {        // Spring physics for bouncy animations
-    type: "spring" as const,
-    stiffness: 300,
-    damping: 20,
-  },
 } as const;
 
 // ─── App Metadata ───────────────────────────────────────
 export const APP_NAME = "LinguaFlow AI";
 export const APP_DESCRIPTION = "AI-Powered Language Translation Tool — Translate text between 25+ languages instantly with smart features like voice input, tone adjustment, and translation history.";
-export const APP_VERSION = "1.0.0";

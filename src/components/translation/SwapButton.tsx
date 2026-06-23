@@ -6,7 +6,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ArrowLeftRight } from "lucide-react";
 
 interface SwapButtonProps {
@@ -24,17 +24,15 @@ export default function SwapButton({ onSwap, disabled = false }: SwapButtonProps
   }
 
   return (
-    <motion.button
+    <m.button
       onClick={handleSwap}
       disabled={disabled}
-      className="w-10 h-10 rounded-full flex items-center justify-center border transition-colors duration-200 shrink-0"
+      className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 shrink-0"
       style={{
-        background: "var(--card-bg)",
-        borderColor: disabled ? "var(--border-color)" : "rgba(109, 40, 217, 0.3)",
-        color: disabled ? "var(--text-muted)" : "#6d28d9",
+        color: disabled ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.7)",
         cursor: disabled ? "not-allowed" : "pointer",
       }}
-      whileHover={disabled ? {} : { scale: 1.1 }}
+      whileHover={disabled ? {} : { scale: 1.1, backgroundColor: "rgba(255,255,255,0.05)" }}
       whileTap={disabled ? {} : { scale: 0.9 }}
       animate={{ rotate: rotation }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
@@ -42,6 +40,6 @@ export default function SwapButton({ onSwap, disabled = false }: SwapButtonProps
       title="Swap languages"
     >
       <ArrowLeftRight className="w-4 h-4" />
-    </motion.button>
+    </m.button>
   );
 }

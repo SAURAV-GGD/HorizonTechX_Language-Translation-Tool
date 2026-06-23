@@ -20,14 +20,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Returns { detectedLang, confidence, provider }
     const result = await detectLanguage(text);
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     console.error("Language detection error:", error);
     return NextResponse.json(
       { error: "Language detection failed." },
-      { status: 500 }
+      { status: 500, headers: { "Cache-Control": "no-store" } }
     );
   }
 }

@@ -13,7 +13,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { X, Mic, MicOff } from "lucide-react";
 import { LIMITS } from "@/lib/constants";
 
@@ -69,10 +69,11 @@ export default function TextInputArea({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 w-full p-4 text-base leading-relaxed resize-none outline-none bg-transparent min-h-[160px] custom-scrollbar"
+        className="flex-1 w-full p-4 text-base leading-relaxed resize-none outline-none bg-transparent min-h-[160px] custom-scrollbar text-white placeholder:text-white/30"
         style={{
-          color: "var(--text-primary)",
-          fontFamily: "'Inter', sans-serif",
+          fontFamily: "var(--font-inter), sans-serif",
+          border: "none",
+          boxShadow: "none",
         }}
         maxLength={LIMITS.MAX_CHARS}
         aria-label="Text to translate"
@@ -82,13 +83,13 @@ export default function TextInputArea({
       {/* Bottom Bar — Clear, Voice, Character Count */}
       <div
         className="flex items-center justify-between px-4 py-2.5 border-t"
-        style={{ borderColor: "var(--border-color)" }}
+        style={{ borderColor: "rgba(255,255,255,0.06)" }}
       >
         <div className="flex items-center gap-1.5">
           {/* Clear Button */}
           <AnimatePresence>
             {value.length > 0 && (
-              <motion.button
+              <m.button
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -98,13 +99,13 @@ export default function TextInputArea({
                 title="Clear text"
               >
                 <X className="w-4 h-4" />
-              </motion.button>
+              </m.button>
             )}
           </AnimatePresence>
 
           {/* Voice Input Button */}
           {isVoiceSupported && (
-            <motion.button
+            <m.button
               onClick={isListening ? onStopVoice : onStartVoice}
               className={`icon-btn !w-8 !h-8 ${
                 isListening ? "!bg-red-500/10 !border-red-500/30 !text-red-500" : ""
@@ -114,16 +115,16 @@ export default function TextInputArea({
               title={isListening ? "Stop recording" : "Voice input"}
             >
               {isListening ? (
-                <motion.div
+                <m.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ repeat: Infinity, duration: 1 }}
                 >
                   <MicOff className="w-4 h-4" />
-                </motion.div>
+                </m.div>
               ) : (
                 <Mic className="w-4 h-4" />
               )}
-            </motion.button>
+            </m.button>
           )}
         </div>
 
@@ -136,13 +137,28 @@ export default function TextInputArea({
                 ? "#ef4444"
                 : isNearLimit
                 ? "#f59e0b"
-                : "var(--text-muted)",
+                : "rgba(255,255,255,0.4)",
             }}
           >
-            {value.length.toLocaleString()}/{LIMITS.MAX_CHARS.toLocaleString()}
+            {value.length.toLocaleString()} / {LIMITS.MAX_CHARS.toLocaleString()} characters
           </span>
         </div>
       </div>
+
+      {/* Inline over-limit error */}
+      <AnimatePresence>
+        {isAtLimit && (
+          <m.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="px-4 pb-2 text-xs text-red-500"
+          >
+            Character limit reached — maximum {LIMITS.MAX_CHARS.toLocaleString()} characters
+            per translation.
+          </m.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

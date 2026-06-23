@@ -6,12 +6,19 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { TranslationState, TranslationTone, HistoryEntry } from "@/types";
+import {
+  TranslationState,
+  TranslationTone,
+  TranslationProvider,
+  TranslationErrorType,
+  HistoryEntry,
+} from "@/types";
 import { generateId } from "@/lib/utils";
 import { LIMITS } from "@/lib/constants";
 
 interface UseTranslationReturn {
   state: TranslationState;
+  currentProvider: TranslationProvider | null;
   setSourceText: (text: string) => void;
   setSourceLang: (lang: string) => void;
   setTargetLang: (lang: string) => void;
@@ -19,6 +26,14 @@ interface UseTranslationReturn {
   translate: (forcedTone?: TranslationTone) => Promise<HistoryEntry | null>;
   swapLanguages: () => void;
   clearAll: () => void;
+}
+
+// Shape of the JSON returned by /api/translate.
+interface TranslateApiResponse {
+  translatedText?: string;
+  provider?: TranslationProvider;
+  detectedSourceLang?: string | null;
+  error?: string;
 }
 
 export function useTranslation(): UseTranslationReturn {
@@ -30,6 +45,8 @@ export function useTranslation(): UseTranslationReturn {
   const [tone, setToneState] = useState<TranslationTone>("default");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<TranslationErrorType | null>(null);
+  const [provider, setProvider] = useState<TranslationProvider | null>(null);
 
   // ─── Parameter Refs to Decouple translate Callback ──
   const sourceTextRef = useRef(sourceText);
@@ -50,6 +67,7 @@ export function useTranslation(): UseTranslationReturn {
     if (text.length > LIMITS.MAX_CHARS) return;
     setSourceTextState(text);
     setError(null);
+    setErrorType(null);
   }, []);
 
   const setSourceLang = useCallback((lang: string) => {
@@ -86,6 +104,7 @@ export function useTranslation(): UseTranslationReturn {
 
     setIsLoading(true);
     setError(null);
+    setErrorType(null);
 
     try {
       const response = await fetch("/api/translate", {
@@ -102,33 +121,59 @@ export function useTranslation(): UseTranslationReturn {
 
       if (controller.signal.aborted) return null;
 
-      const data = await response.json();
+      const data: TranslateApiResponse = await response.json().catch(() => ({}));
 
+      // ── Differentiated error handling ──────────────
       if (!response.ok) {
-        throw new Error(data.error || "Translation failed.");
+        const type: TranslationErrorType =
+          response.status === 429
+            ? "quota"
+            : response.status === 400
+            ? "invalid"
+            : "generic";
+        const fallbackMsg =
+          type === "quota"
+            ? "Too many requests — please slow down and try again shortly."
+            : type === "invalid"
+            ? "Invalid input. Please check your text and language selection."
+            : "Translation failed. Please try again.";
+        setError(data.error || fallbackMsg);
+        setErrorType(type);
+        setProvider(null);
+        setIsLoading(false);
+        return null;
       }
 
-      setTranslatedText(data.translatedText);
+      const translated = data.translatedText ?? "";
+      const usedProvider = (data.provider as TranslationProvider) || null;
+
+      setTranslatedText(translated);
+      setProvider(usedProvider);
+      setError(null);
+      setErrorType(null);
       setIsLoading(false);
 
       const historyEntry: HistoryEntry = {
         id: generateId(),
         sourceText: textVal,
-        translatedText: data.translatedText,
+        translatedText: translated,
         sourceLang: srcLangVal,
         targetLang: tgtLangVal,
         timestamp: Date.now(),
-        provider: data.provider || "Unknown",
+        provider: usedProvider || "Unknown",
       };
 
       return historyEntry;
     } catch (err) {
+      // Aborted requests are intentional (debounce/superseded) — ignore.
       if (err instanceof Error && err.name === "AbortError") {
         return null;
       }
 
-      const message = err instanceof Error ? err.message : "Translation failed.";
-      setError(message);
+      // A thrown fetch (vs. a non-ok response) means a network failure.
+      setError("Network error. Please check your connection and try again.");
+      setErrorType("network");
+      setProvider(null);
       setIsLoading(false);
       return null;
     }
@@ -143,6 +188,8 @@ export function useTranslation(): UseTranslationReturn {
     if (!sourceText.trim()) {
       setTranslatedText("");
       setError(null);
+      setErrorType(null);
+      setProvider(null);
       return;
     }
 
@@ -165,6 +212,8 @@ export function useTranslation(): UseTranslationReturn {
     setTargetLangState(sourceLang);
     setSourceTextState(translatedText);
     setTranslatedText(sourceText);
+    // The displayed output is now the old input — its provider no longer applies.
+    setProvider(null);
   }, [sourceLang, targetLang, sourceText, translatedText]);
 
   // ─── Clear ────────────────────────────────────────
@@ -176,6 +225,8 @@ export function useTranslation(): UseTranslationReturn {
     setToneState("default");
     setIsLoading(false);
     setError(null);
+    setErrorType(null);
+    setProvider(null);
   }, []);
 
   const state: TranslationState = {
@@ -186,10 +237,13 @@ export function useTranslation(): UseTranslationReturn {
     tone,
     isLoading,
     error,
+    provider,
+    errorType,
   };
 
   return {
     state,
+    currentProvider: provider,
     setSourceText,
     setSourceLang,
     setTargetLang,

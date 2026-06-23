@@ -25,6 +25,10 @@ export interface Language {
   code: string;       // ISO 639-1 code, e.g., "en", "hi", "es"
   name: string;       // English name, e.g., "English", "Hindi"
   nativeName: string; // Name in that language, e.g., "हिन्दी", "Español"
+  // DeepL uppercase code (e.g., "FR", "PT-BR"). OMITTED when DeepL does not
+  // support the language (e.g., Hindi, Tamil) — the service then skips DeepL
+  // for that language and goes straight to MyMemory.
+  deeplCode?: string;
 }
 
 // ─── Translation Request ─────────────────────────────────
@@ -36,13 +40,27 @@ export interface TranslationRequest {
   tone?: TranslationTone; // Optional tone adjustment
 }
 
+// ─── Translation Provider ────────────────────────────────
+// Which backend produced a translation. Lowercase keys keep the API,
+// the hook, and the UI badge in sync. "none" = source === target (passthrough).
+export type TranslationProvider =
+  | "deepl"
+  | "google"
+  | "mymemory"
+  | "libretranslate"
+  | "none";
+
+// ─── Translation Error Type ──────────────────────────────
+// Lets the UI react differently to quota vs. network vs. bad input.
+export type TranslationErrorType = "quota" | "network" | "invalid" | "generic";
+
 // ─── Translation Response ────────────────────────────────
 // What we get BACK from the API after translation
 export interface TranslationResponse {
-  translatedText: string;     // The translated result
-  detectedLanguage?: string;  // If auto-detect was used
-  confidence?: number;        // How confident the detection was (0-1)
-  provider: string;           // Which API provided the translation
+  translatedText: string;            // The translated result
+  detectedLanguage?: string;         // If auto-detect was used (ISO code, lowercase)
+  confidence?: number;               // How confident the detection was (0-1)
+  provider: TranslationProvider;     // Which API provided the translation
 }
 
 // ─── History Entry ───────────────────────────────────────
@@ -69,8 +87,18 @@ export interface Toast {
 }
 
 // ─── Translation Tone ────────────────────────────────────
-// AI tone adjustment options
-export type TranslationTone = "default" | "formal" | "casual" | "professional" | "friendly";
+// Fun stylistic "vibes" applied to the translated text AFTER translation.
+// Unlike formality, these are not something any MT engine does — they're
+// deterministic post-processing transforms (see lib/toneStyler.ts).
+export type TranslationTone =
+  | "default"   // 🤖 Standard — no styling
+  | "genz"      // 😎 Gen-Z slang
+  | "angry"     // 😤 ANGRY / shouting
+  | "lazy"      // 😴 Lazy — short words, no effort
+  | "excited"   // 🤩 Hyped / excited
+  | "sarcastic" // 🙄 Dry sarcasm
+  | "pirate"    // 🏴‍☠️ Pirate speak
+  | "uwu";      // 🥺 UwU cutesy
 
 // ─── Translation State ──────────────────────────────────
 // The complete state of the translation UI
@@ -82,6 +110,10 @@ export interface TranslationState {
   tone: TranslationTone;
   isLoading: boolean;
   error: string | null;
+  // Which provider produced the current output (drives the output badge).
+  provider: TranslationProvider | null;
+  // Category of the last error, for differentiated UI messaging.
+  errorType: TranslationErrorType | null;
 }
 
 // ─── API Error ───────────────────────────────────────────

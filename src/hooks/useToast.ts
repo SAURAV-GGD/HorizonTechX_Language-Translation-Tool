@@ -22,16 +22,22 @@ interface UseToastReturn {
 export function useToast(): UseToastReturn {
   const [toasts, setToasts] = useState<Toast[]>([]);
   
-  // Track timers so we can clean them up
-  const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  // Track timers so we can clean them up.
+  // Lazy-init: useRef has no lazy form, so `new Map()` as an arg would
+  // allocate a throwaway Map on every render. Create it once on first use.
+  const timersRef = useRef<Map<string, NodeJS.Timeout> | null>(null);
+  if (timersRef.current === null) {
+    timersRef.current = new Map();
+  }
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-    // Clear the auto-dismiss timer
-    const timer = timersRef.current.get(id);
+    // Clear the auto-dismiss timer (map is created during render, never null here)
+    const timers = timersRef.current!;
+    const timer = timers.get(id);
     if (timer) {
       clearTimeout(timer);
-      timersRef.current.delete(id);
+      timers.delete(id);
     }
   }, []);
 
@@ -49,7 +55,7 @@ export function useToast(): UseToastReturn {
         dismissToast(id);
       }, duration);
 
-      timersRef.current.set(id, timer);
+      timersRef.current!.set(id, timer);
     },
     [dismissToast]
   );

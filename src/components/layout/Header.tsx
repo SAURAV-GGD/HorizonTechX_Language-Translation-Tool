@@ -1,21 +1,14 @@
 /* ============================================
- * Header — App Navigation Bar
+ * Header — Liquid Glass Pill Navbar
  * ============================================
- * 
- * The header is the top bar of the application.
- * It contains the logo, app name, and action buttons
- * (theme toggle, history toggle).
- * 
- * GLASSMORPHISM NAVBAR:
- * The header uses backdrop-blur to create a frosted
- * glass effect when content scrolls behind it.
+ * Floating pill-style navbar with the liquid-glass
+ * effect. Always dark, always premium.
  */
 
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Languages, History } from "lucide-react";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 
 interface HeaderProps {
   onToggleHistory: () => void;
@@ -24,64 +17,70 @@ interface HeaderProps {
 
 export default function Header({ onToggleHistory, historyCount }: HeaderProps) {
   return (
-    <motion.header
-      className="sticky top-0 z-40 glass-card-subtle"
-      style={{
-        borderRadius: 0,
-        borderBottom: "1px solid var(--border-color)",
-      }}
+    <m.header
+      className="relative z-20 px-4 sm:px-6 py-4 sm:py-6"
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="app-container flex items-center justify-between h-16">
-        {/* Logo & App Name */}
+      <nav className="liquid-glass rounded-full max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        {/* Left: Logo & App Name */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-lg">
-            <Languages className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500/80 to-accent-500/80 flex items-center justify-center">
+            <Languages className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <h1
-              className="text-lg font-bold tracking-tight"
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                color: "var(--text-primary)",
-              }}
-            >
-              LinguaFlow{" "}
-              <span className="gradient-text">AI</span>
-            </h1>
-            <p
-              className="text-xs hidden sm:block"
-              style={{ color: "var(--text-muted)" }}
-            >
-              AI-Powered Translation
-            </p>
+          <span
+            className="text-white font-semibold text-lg tracking-tight"
+            style={{ fontFamily: "var(--font-space-grotesk), sans-serif" }}
+          >
+            LinguaFlow
+          </span>
+
+          {/* Desktop nav links */}
+          <div className="hidden md:flex items-center gap-8 ml-8">
+            <span className="text-white/80 hover:text-white text-sm font-medium cursor-pointer transition-colors">
+              Translate
+            </span>
+            <span className="text-white/80 hover:text-white text-sm font-medium cursor-pointer transition-colors">
+              Features
+            </span>
+            <span className="text-white/80 hover:text-white text-sm font-medium cursor-pointer transition-colors">
+              About
+            </span>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        {/* Right: History & Actions */}
+        <div className="flex items-center gap-3">
           {/* History Button */}
-          <motion.button
+          <m.button
             onClick={onToggleHistory}
-            className="icon-btn relative"
-            whileTap={{ scale: 0.9 }}
+            className="relative text-white/80 hover:text-white text-sm font-medium transition-colors px-3 py-1.5"
+            whileTap={{ scale: 0.95 }}
             aria-label="Translation history"
             title="Translation history"
           >
-            <History className="w-5 h-5" />
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">History</span>
+            </div>
             {historyCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary-500 text-white text-xs flex items-center justify-center font-medium">
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary-500 text-white text-[10px] flex items-center justify-center font-bold">
                 {historyCount > 9 ? "9+" : historyCount}
               </span>
             )}
-          </motion.button>
+          </m.button>
 
-          {/* Theme Toggle */}
-          <ThemeToggle />
+          {/* CTA Button */}
+          <m.button
+            className="liquid-glass rounded-full px-5 py-2 text-white text-sm font-medium hover:bg-white/5 transition-colors"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Get Started
+          </m.button>
         </div>
-      </div>
-    </motion.header>
+      </nav>
+    </m.header>
   );
 }

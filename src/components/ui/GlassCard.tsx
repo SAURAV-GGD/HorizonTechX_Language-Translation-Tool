@@ -18,7 +18,7 @@
 
 "use client"; // This component uses browser APIs (animations)
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 // ─── Component Props ────────────────────────────────────
@@ -55,14 +55,14 @@ export default function GlassCard({
 
   if (animate) {
     return (
-      <motion.div
+      <m.div
         className={cn("glass-card", className)}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         {children}
-      </motion.div>
+      </m.div>
     );
   }
 

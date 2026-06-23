@@ -5,7 +5,7 @@
 
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { X, Trash2, Search, History } from "lucide-react";
 import { useState } from "react";
 import { HistoryEntry } from "@/types";
@@ -41,7 +41,7 @@ export default function HistoryPanel({
       {isOpen && (
         <>
           {/* Backdrop Shadow Overlay */}
-          <motion.div
+          <m.div
             className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -50,12 +50,12 @@ export default function HistoryPanel({
           />
 
           {/* Sliding Panel */}
-          <motion.div
+          <m.div
             className="fixed top-0 right-0 z-50 h-full w-full max-w-sm border-l flex flex-col"
             style={{
-              background: "var(--card-bg)",
-              backdropFilter: "blur(20px)",
-              borderColor: "var(--border-color)",
+              background: "rgba(10, 10, 10, 0.95)",
+              backdropFilter: "blur(8px)",
+              borderColor: "rgba(255,255,255,0.06)",
             }}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -63,17 +63,17 @@ export default function HistoryPanel({
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {/* Drawer Header */}
-            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "var(--border-color)" }}>
+            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <div className="flex items-center gap-2">
                 <History className="w-5 h-5 text-primary-500" />
-                <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+                <h2 className="text-base font-bold text-white">
                   Translation History
                 </h2>
               </div>
               <button
+                type="button"
                 onClick={onClose}
-                className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                style={{ color: "var(--text-muted)" }}
+                className="p-1 rounded-lg hover:bg-white/5 transition-colors text-white/40"
                 aria-label="Close panel"
               >
                 <X className="w-5 h-5" />
@@ -82,19 +82,20 @@ export default function HistoryPanel({
 
             {/* Search Input Bar */}
             {history.length > 0 && (
-              <div className="p-3 border-b" style={{ borderColor: "var(--border-color)" }}>
+              <div className="p-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--text-muted)" }} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                   <input
                     type="text"
+                    aria-label="Search translation history"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search logs..."
                     className="w-full pl-9 pr-3 py-2 rounded-lg text-sm"
                     style={{
-                      background: "var(--input-bg)",
-                      color: "var(--text-primary)",
-                      border: "1px solid var(--border-color)",
+                      background: "rgba(255,255,255,0.04)",
+                      color: "white",
+                      border: "1px solid rgba(255,255,255,0.06)",
                     }}
                   />
                 </div>
@@ -105,7 +106,7 @@ export default function HistoryPanel({
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3">
               {filteredHistory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                  <p className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+                  <p className="text-sm font-medium text-white/30">
                     {search ? "No matches found." : "No saved translations yet."}
                   </p>
                 </div>
@@ -126,8 +127,9 @@ export default function HistoryPanel({
 
             {/* Footer Control Panel */}
             {history.length > 0 && (
-              <div className="p-4 border-t bg-black/[0.01] dark:bg-white/[0.01]" style={{ borderColor: "var(--border-color)" }}>
+              <div className="p-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 <button
+                  type="button"
                   onClick={onClear}
                   className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-medium"
                 >
@@ -136,7 +138,7 @@ export default function HistoryPanel({
                 </button>
               </div>
             )}
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

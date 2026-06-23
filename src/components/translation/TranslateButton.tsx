@@ -5,7 +5,7 @@
 
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { TranslationTone } from "@/types";
 
@@ -25,7 +25,7 @@ export default function TranslateButton({
   const isDefault = selectedTone === "default";
 
   return (
-    <motion.button
+    <m.button
       onClick={onClick}
       disabled={disabled || isLoading || isDefault}
       className={`btn-primary flex items-center justify-center gap-2 w-full py-3 text-base shadow-lg transition-all duration-300 ${
@@ -44,6 +44,6 @@ export default function TranslateButton({
           ? "Select Tone to Apply Shift"
           : "Apply Tone Shift"}
       </span>
-    </motion.button>
+    </m.button>
   );
 }

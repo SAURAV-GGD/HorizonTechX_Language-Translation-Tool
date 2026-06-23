@@ -19,7 +19,7 @@
 
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useSyncExternalStore } from "react";
 
 interface UseVoiceInputReturn {
   isListening: boolean;
@@ -42,19 +42,26 @@ interface SpeechRecognitionEvent {
   };
 }
 
+// Browser speech-recognition support is a fixed fact about the current
+// browser, read via useSyncExternalStore so the server snapshot (false)
+// hydrates cleanly with no extra mount render. The subscribe is a no-op
+// because support never changes at runtime.
+const noopSubscribe = () => () => {};
+const getSupportSnapshot = () =>
+  typeof window !== "undefined" &&
+  ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
+
 export function useVoiceInput(): UseVoiceInputReturn {
   const [isListening, setIsListening] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState("");
-  
+
   const recognitionRef = useRef<ReturnType<typeof createRecognition> | null>(null);
 
-  // Check browser support on mount
-  useEffect(() => {
-    const supported = typeof window !== "undefined" && 
-      ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
-    setIsSupported(supported);
-  }, []);
+  const isSupported = useSyncExternalStore(
+    noopSubscribe,
+    getSupportSnapshot,
+    () => false
+  );
 
   const startListening = useCallback((lang: string = "en-US") => {
     if (!isSupported) return;
