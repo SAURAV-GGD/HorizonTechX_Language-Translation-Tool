@@ -51,6 +51,11 @@ export const metadata: Metadata = {
     "voice translation",
   ],
   authors: [{ name: "Saurav Kumar" }],
+  // Google Search Console site ownership verification. Next.js renders this
+  // as <meta name="google-site-verification" content="..."> in <head>.
+  verification: {
+    google: "ajYiJEJIwTlCkxzIxFSmJFwg8V700r757FLpPTfoHPo",
+  },
 };
 
 // ─── Root Layout Component ────────────────────────────
