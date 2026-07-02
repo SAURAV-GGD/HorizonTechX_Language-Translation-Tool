@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="demm.webp" width="700">
+</p>
+
 # 🌐 LINGUAFLOW AI — PRODUCTION-GRADE TRANSLATION PLATFORM
 
 LinguaFlow AI is a modern, responsive language translation web application built with **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS**, and **Framer Motion**.
